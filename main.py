@@ -24,9 +24,9 @@ roomDescriptions = {
 }
 
 roomContents = {
-    "sword": "sword",
+    "sword": "+5 magic sword",
     "magic stones": "mysterious glowing stones",
-    "prize": "prize",
+    "prize": "The Final Prize",
 }
 
 
@@ -58,13 +58,13 @@ class Adventurer:
             print("You can't go right.")
 
     def up(self):
-        if map(self.floor, self.room) == "stairs up":
+        if map[self.floor][self.room] == "stairs up":
             self.floor += 1
         else:
             print("There are no stairs here.")
 
     def down(self):
-        if map(self.floor, self.room) == "stairs down":
+        if map[self.floor][self.room] == "stairs down":
             self.floor -= 1
         else:
             print("There are no stairs here.")
