@@ -24,8 +24,8 @@ roomDescriptions = {
 }
 
 roomContents = {
-    "sword": "+5 magic sword",
-    "magic stones": "mysterious glowing stones",
+    "sword": "a +5 magic sword",
+    "magic stones": "some mysterious glowing stones",
     "prize": "The Final Prize",
 }
 
@@ -38,11 +38,11 @@ class Adventurer:
         self.inventory = []
         self.floor = 0
         self.room = 0
-        self.state = "ongoing"
+        self.state = "running"
 
     def help(__):
         print(
-            "You may go left, right, up or down. You may also get and fight. You may check your bag with inventory."
+            "You may go left (l), right (r), up or down. You may also get and fight. You may check your bag with inventory."
         )
 
     def left(self):
@@ -70,13 +70,27 @@ class Adventurer:
             print("There are no stairs here.")
 
     def get(self):
-        return
+        global map
+        try:
+            roomContents[map[self.floor][self.room]]
+        except:
+            print('There is nothing to get.')
+            return
+        print('You get {}'.format(roomContents[map[self.floor][self.room]]))
+        self.inventory.append(map[self.floor][self.room])
+        map[self.floor][self.room] = 'empty'
 
     def fight(self):
         return
 
     def inventory(self):
-        return
+        print(self.inventory)
+
+    def r(self):
+        self.right()
+
+    def l(self):
+        self.left()
 
 
 def description(floor, room):
@@ -88,14 +102,14 @@ def playGame():
     # position to lower left room, state to game on
     me = Adventurer()
 
-    while me.state == "ongoing":
+    while me.state == "running":
         print(description(me.floor, me.room))
         try:
             getattr(me, input("What will you do? "))()
         except:
             print('Command not recognized. Type "help" to see commands.')
 
-    if me.state == "won":
+    if me.state == "win":
         print("You won the game! :)")
     else:
         print("You lost the game. :( Maybe next time.")
