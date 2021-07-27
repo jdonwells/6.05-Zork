@@ -35,7 +35,7 @@ class Adventurer:
     My Adventurer class that holds game state and runs commands
     """
     def __init__(self):
-        self.inventory = []
+        self.bag = []
         self.floor = 0
         self.room = 0
         self.state = "running"
@@ -77,14 +77,14 @@ class Adventurer:
             print('There is nothing to get.')
             return
         print('You get {}'.format(roomContents[map[self.floor][self.room]]))
-        self.inventory.append(map[self.floor][self.room])
+        self.bag.append(map[self.floor][self.room])
         map[self.floor][self.room] = 'empty'
 
     def fight(self):
         return
 
     def inventory(self):
-        print(self.inventory)
+        print(self.bag)
 
     def r(self):
         self.right()
