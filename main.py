@@ -65,9 +65,10 @@ class Adventurer:
         room_change = {"left": -1, "right": 1}
         there_is_a_monster = monsters.count(self.this_room()) > 0
         going_back = self.room + room_change[direction] == self.previousRoom
-        last_room = 0 if direction == 'left' else len(map[self.floor]) - 1
+        last_room = 0 if direction == "left" else len(map[self.floor]) - 1
         if there_is_a_monster and not going_back:
-            print("The monster won't let you pass!")
+            print("The monster won't let you pass! You have died trying.")
+            self.state = "lose"
             return
         if self.room == last_room:
             print(f"You can't go {direction}.")
@@ -97,7 +98,7 @@ class Adventurer:
         if self.this_room() == "prize":
             self.state = "win"
         self.inventory.append(self.this_room())
-        self.empty_this_room()
+        empty_this_room(self.floor, self.room)
 
     def fight(self):
         ready_for_monster = self.inventory.count("sword") > 0
@@ -111,7 +112,7 @@ class Adventurer:
             self.state = "lose"
             return
         print("You slay the evil beast. Unfortunately, your sword dissolves.")
-        self.empty_this_room()
+        empty_this_room(self.floor, self.room)
         self.inventory.remove("sword")
 
     def bag(self):
@@ -124,12 +125,14 @@ class Adventurer:
     def this_room(self):
         return map[self.floor][self.room]
 
-    def empty_this_room(self):
-        global map
-        map[self.floor][self.room] = "empty"
+
+def empty_this_room(floor, room):
+    global map
+    map[floor][room] = "empty"
 
 
 def description(floor, room):
+    global map
     return roomDescriptions[map[floor][room]]
 
 
