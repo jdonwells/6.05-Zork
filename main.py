@@ -65,7 +65,11 @@ class Adventurer:
         room_change = {"left": -1, "right": 1}
         there_is_a_monster = monsters.count(self.this_room()) > 0
         going_back = self.room + room_change[direction] == self.previousRoom
-        last_room = 0 if direction == "left" else len(map[self.floor]) - 1
+        last_room = (
+            first_room_on_this_floor(self.floor)
+            if direction == "left"
+            else last_room_on_this_floor(self.floor)
+        )
         if there_is_a_monster and not going_back:
             print("The monster won't let you pass! You have died trying.")
             self.state = "lose"
@@ -124,6 +128,15 @@ class Adventurer:
 
     def this_room(self):
         return map[self.floor][self.room]
+
+
+def first_room_on_this_floor(__):
+    return 0
+
+
+def last_room_on_this_floor(floor):
+    global map
+    return len(map[floor]) - 1
 
 
 def empty_this_room(floor, room):
