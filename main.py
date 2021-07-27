@@ -81,7 +81,16 @@ class Adventurer:
         map[self.floor][self.room] = 'empty'
 
     def fight(self):
-        return
+        global map
+        if 'sword' not in self.inventory or (
+                map[self.floor][self.room] == 'boss monster'
+                and 'magic stones' not in self.inventory):
+            print('The monster kills you.')
+            self.state = 'lose'
+        else:
+            print('You slay the evil beast. Unfortunately, your sword dissolves.')
+            map[self.floor][self.room] = 'empty'
+            self.inventor.remove('sword')
 
     def bag(self):
         print(self.inventory)
