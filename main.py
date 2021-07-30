@@ -19,11 +19,12 @@ roomDescriptions = {
     "stairs down": "You see stairs going down.",
     "monster": "There is an angry monster here!",
     "boss monster": "There is an extraordinarily large unhappy monster here.",
+    "corpse": "This room has a foul smelling puddle.",
     "magic stones": "There are mysterious glowing stones here.",
     "prize": "You have found a prize!",
 }
 
-monsters = ["monster", "boss monster"]
+monsters = ("monster", "boss monster")
 
 roomContents = {
     "sword": "+5 magic sword",
@@ -63,7 +64,7 @@ class Adventurer:
 
     def move(self, direction):
         room_change = {"left": -1, "right": 1}
-        there_is_a_monster = monsters.count(self.this_room()) > 0
+        there_is_a_monster = self.this_room() in monsters
         going_back = self.room + room_change[direction] == self.previousRoom
         last_room = (
             first_room_on_this_floor(self.floor)
@@ -93,10 +94,11 @@ class Adventurer:
             print("There are no stairs going down.")
 
     def get(self):
-        try:
-            roomContents[self.this_room()]
-        except:
+        if self.this_room() not in roomContents:
             print("There is nothing to get.")
+            return
+        if len(self.inventory) >= 3:
+            print("You can only carry three things.")
             return
         print("You get {}".format(roomContents[self.this_room()]))
         if self.this_room() == "prize":
@@ -105,26 +107,30 @@ class Adventurer:
         empty_this_room(self.floor, self.room)
 
     def fight(self):
-        ready_for_monster = self.inventory.count("sword") > 0
-        ready_for_boss = self.inventory.count("magic stones") > 0
-        if not ready_for_monster:
-            print("The monster kills you.")
+        ready_for_monster = "sword" in self.inventory
+        ready_for_boss = ready_for_monster and "magic stones" in self.inventory
+        monster_here = self.this_room() == "monster"
+        boss_here = self.this_room() == "boss monster"
+        if not monster_here and not boss_here:
+            print("Relax, there is nothing to fight here.")
+            return
+        if monster_here and not ready_for_monster:
+            print("The monster kills you in a most horrible way.")
             self.state = "lose"
             return
-        if self.this_room() == "boss monster" and not ready_for_boss:
-            print("You are unprepared. The monster kills you.")
+        if boss_here and not ready_for_boss:
+            print("You are unprepared. The surprisingly big monster cheerfully kills you.")
             self.state = "lose"
             return
-        print("You slay the evil beast. Unfortunately, your sword dissolves.")
-        empty_this_room(self.floor, self.room)
+        print("You slay the evil beast and it dissolves. Unfortunately, your sword also dissolves.")
         self.inventory.remove("sword")
+        monster_died_here(self.floor, self.room)
 
     def bag(self):
         if len(self.inventory) == 0:
             print("Your bag is empty.")
             return
-        for item in self.inventory:
-            print(roomContents[item])
+        print(", ".join([roomContents[item] for item in self.inventory]))
 
     def this_room(self):
         return map[self.floor][self.room]
@@ -147,6 +153,10 @@ def empty_this_room(floor, room):
 def description(floor, room):
     global map
     return roomDescriptions[map[floor][room]]
+
+def monster_died_here(floor,room):
+    global map
+    map[floor][room] = "corpse"
 
 
 def playGame():
