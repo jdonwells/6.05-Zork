@@ -119,10 +119,14 @@ class Adventurer:
             self.state = "lose"
             return
         if boss_here and not ready_for_boss:
-            print("You are unprepared. The surprisingly big monster cheerfully kills you.")
+            print(
+                "You are unprepared. The surprisingly big monster cheerfully kills you."
+            )
             self.state = "lose"
             return
-        print("You slay the evil beast and it dissolves. Unfortunately, your sword also dissolves.")
+        print(
+            "You slay the evil beast and it dissolves. Unfortunately, your sword also dissolves."
+        )
         self.inventory.remove("sword")
         monster_died_here(self.floor, self.room)
 
@@ -154,7 +158,8 @@ def description(floor, room):
     global map
     return roomDescriptions[map[floor][room]]
 
-def monster_died_here(floor,room):
+
+def monster_died_here(floor, room):
     global map
     map[floor][room] = "corpse"
 
