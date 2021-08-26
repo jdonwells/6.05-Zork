@@ -33,111 +33,113 @@ roomContents = {
 }
 
 
-class Adventurer:
-    """
-    My Adventurer class that holds game state and runs commands
-    """
+def help():
+    print(
+        "You may go left (l), right (r), up or down. You can get and fight. You may also check your bag."
+    )
 
-    def __init__(self):
-        self.inventory = []
-        self.floor = 0
-        self.room = 0
-        self.previousRoom = 0
-        self.state = "running"
 
-    def help(__):
-        print(
-            "You may go left (l), right (r), up or down. You can get and fight. You may also check your bag."
-        )
+def left():
+    move("left")
 
-    def left(self):
-        self.move("left")
 
-    def l(self):
-        self.move("left")
+def l():
+    move("left")
 
-    def right(self):
-        self.move("right")
 
-    def r(self):
-        self.move("right")
+def right():
+    move("right")
 
-    def move(self, direction):
-        room_change = {"left": -1, "right": 1}
-        there_is_a_monster = self.this_room() in monsters
-        going_back = self.room + room_change[direction] == self.previousRoom
-        last_room = (
-            first_room_on_this_floor(self.floor)
-            if direction == "left"
-            else last_room_on_this_floor(self.floor)
-        )
-        if there_is_a_monster and not going_back:
-            print("The monster won't let you pass! You have died trying.")
-            self.state = "lose"
-            return
-        if self.room == last_room:
-            print(f"You can't go {direction}.")
-            return
-        self.previousRoom = self.room
-        self.room += room_change[direction]
 
-    def up(self):
-        if self.this_room() == "stairs up":
-            self.floor += 1
-        else:
-            print("There are no stairs going up.")
+def r():
+    move("right")
 
-    def down(self):
-        if self.this_room() == "stairs down":
-            self.floor -= 1
-        else:
-            print("There are no stairs going down.")
 
-    def get(self):
-        if self.this_room() not in roomContents:
-            print("There is nothing to get.")
-            return
-        if len(self.inventory) >= 3:
-            print("You can only carry three things.")
-            return
-        print("You get {}".format(roomContents[self.this_room()]))
-        if self.this_room() == "prize":
-            self.state = "win"
-        self.inventory.append(self.this_room())
-        empty_this_room(self.floor, self.room)
+def move(direction):
+    global previous_room, room, state
+    room_change = {"left": -1, "right": 1}
+    there_is_a_monster = this_room() in monsters
+    going_back = room + room_change[direction] == previous_room
+    last_room = (
+        first_room_on_this_floor(floor)
+        if direction == "left"
+        else last_room_on_this_floor(floor)
+    )
+    if there_is_a_monster and not going_back:
+        print("The monster won't let you pass! You have died trying.")
+        state = "lose"
+        return
+    if room == last_room:
+        print(f"You can't go {direction}.")
+        return
+    previous_room = room
+    room += room_change[direction]
 
-    def fight(self):
-        ready_for_monster = "sword" in self.inventory
-        ready_for_boss = ready_for_monster and "magic stones" in self.inventory
-        monster_here = self.this_room() == "monster"
-        boss_here = self.this_room() == "boss monster"
-        if not monster_here and not boss_here:
-            print("Relax, there is nothing to fight here.")
-            return
-        if monster_here and not ready_for_monster:
-            print("The monster kills you in a most horrible way.")
-            self.state = "lose"
-            return
-        if boss_here and not ready_for_boss:
-            print(
-                "You are unprepared. The surprisingly big monster cheerfully kills you."
-            )
-            self.state = "lose"
-            return
-        print(
-            "You slay the evil beast and it dissolves. Unfortunately, your sword also dissolves."
-        )
-        self.inventory.remove("sword")
-        monster_died_here(self.floor, self.room)
 
-    def bag(self):
-        if len(self.inventory) == 0:
-            print("Your bag is empty.")
-            return
-        print(", ".join([roomContents[item] for item in self.inventory]))
+def up():
+    global floor
+    if this_room() == "stairs up":
+        floor += 1
+    else:
+        print("There are no stairs going up.")
 
-    def this_room(self):
-        return map[self.floor][self.room]
+
+def down():
+    global floor
+    if this_room() == "stairs down":
+        floor -= 1
+    else:
+        print("There are no stairs going down.")
+
+
+def get():
+    global state
+    if this_room() not in roomContents:
+        print("There is nothing to get.")
+        return
+    if len(inventory) >= 3:
+        print("You can only carry three things.")
+        return
+    print("You get {}".format(roomContents[this_room()]))
+    if this_room() == "prize":
+        state = "win"
+    inventory.append(this_room())
+    empty_this_room(floor, room)
+
+
+def fight():
+    global state
+    ready_for_monster = "sword" in inventory
+    ready_for_boss = ready_for_monster and "magic stones" in inventory
+    monster_here = this_room() == "monster"
+    boss_here = this_room() == "boss monster"
+    if not monster_here and not boss_here:
+        print("Relax, there is nothing to fight here.")
+        return
+    if monster_here and not ready_for_monster:
+        print("The monster kills you in a most horrible way.")
+        state = "lose"
+        return
+    if boss_here and not ready_for_boss:
+        print("You are unprepared. The surprisingly big monster cheerfully kills you.")
+        state = "lose"
+        return
+    print(
+        "You slay the evil beast and it dissolves. Unfortunately, your sword also dissolves."
+    )
+    inventory.remove("sword")
+    monster_died_here(floor, room)
+
+
+def bag():
+    if len(inventory) == 0:
+        print("Your bag is empty.")
+        return
+    print(", ".join([roomContents[item] for item in inventory]))
+
+
+def this_room():
+    return map[floor][room]
 
 
 def first_room_on_this_floor(__):
@@ -164,19 +166,40 @@ def monster_died_here(floor, room):
     map[floor][room] = "corpse"
 
 
+commands = {
+    "help": help,
+    "left": left,
+    "right": right,
+    "l": left,
+    "r": right,
+    "up": up,
+    "down": down,
+    "get": get,
+    "fight": fight,
+    "bag": bag,
+}
+
+
 def playGame():
     # create an Adventurer to represent me. Initialize inventory to empty,
     # position to lower left room, state to game on
-    me = Adventurer()
 
-    while me.state != "win" and me.state != "lose":
-        print(description(me.floor, me.room))
+    global inventory, floor, room, previous_room, state
+
+    inventory = []
+    floor = 0
+    room = 0
+    previous_room = 0
+    state = "running"
+
+    while state != "win" and state != "lose":
+        print(description(floor, room))
         try:
-            getattr(me, input("What will you do? "))()
+            commands[input("What will you do? ")]()
         except:
             print('Command not recognized. Type "help" to see commands.')
 
-    if me.state == "win":
+    if state == "win":
         print("You won the game! :)")
     else:
         print("You lost the game. :( Maybe next time.")
