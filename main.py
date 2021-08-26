@@ -43,15 +43,7 @@ def left():
     move("left")
 
 
-def l():
-    move("left")
-
-
 def right():
-    move("right")
-
-
-def r():
     move("right")
 
 
@@ -173,7 +165,9 @@ commands = {
     "l": left,
     "r": right,
     "up": up,
+    "u": up,
     "down": down,
+    "d": down,
     "get": get,
     "fight": fight,
     "bag": bag,
