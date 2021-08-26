@@ -161,8 +161,8 @@ def monster_died_here(floor, room):
 commands = {
     "help": help,
     "left": left,
-    "right": right,
     "l": left,
+    "right": right,
     "r": right,
     "up": up,
     "u": up,
