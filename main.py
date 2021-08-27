@@ -149,7 +149,6 @@ def empty_this_room(floor, room):
 
 
 def description(floor, room):
-    global map
     return roomDescriptions[map[floor][room]]
 
 
@@ -188,9 +187,10 @@ def playGame():
 
     while state != "win" and state != "lose":
         print(description(floor, room))
-        try:
-            commands[input("What will you do? ")]()
-        except:
+        command = input("What will you do? ")
+        if command in commands:
+            commands[command]()
+        else:
             print('Command not recognized. Type "help" to see commands.')
 
     if state == "win":
