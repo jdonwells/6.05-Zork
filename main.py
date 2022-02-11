@@ -4,138 +4,197 @@ Text Monster Game
 The goal of this game is to beat the monsters and claim the prize at the end of the dungeon.
 """
 
-# Map of the dungeon
-# Feel free to adapt and design your own level. The whole map must be at least 3 floors and 15 rooms total, though.
-
-SWORD = 0
-MAGIC_STONES = 1
-PRIZE = 2
-EMPTY = 3
-STAIRS_UP = 4
-STAIRS_DOWN = 5
-MONSTER = 6
-BOSS_MONSTER = 7
-CORPSE = 8
-LEFT = -1
-RIGHT = 1
-
-the_map = [
-    [EMPTY, SWORD, STAIRS_UP, MONSTER, EMPTY],
-    [MAGIC_STONES, MONSTER, STAIRS_DOWN, EMPTY, STAIRS_UP],
-    [PRIZE, BOSS_MONSTER, SWORD, SWORD, STAIRS_DOWN],
+dungeon_map = [
+    ["empty", "sword", "stairs up", "monster", "empty"],
+    ["magic stones", "monster", "stairs down", "empty", "stairs up"],
+    ["prize", "boss monster", "sword", "sword", "stairs down"],
 ]
 
-MIN_ROOM = 0
-MAX_ROOM = len(the_map[1]) - 1
+roomDescriptions = {
+    "empty": "You are in an empty room.",
+    "sword": "There is a sword here!",
+    "stairs up": "There are stairs going up.",
+    "stairs down": "You see stairs going down.",
+    "monster": "There is an angry monster here!",
+    "boss monster": "There is an extraordinarily large unhappy monster here.",
+    "corpse": "This room has a foul smelling puddle.",
+    "magic stones": "There are mysterious glowing stones here.",
+    "prize": "You have found a prize!",
+}
 
-roomDescriptions = [
-    "There is a sword here!",
-    "There are mysterious glowing stones here.",
-    "You have found a prize!",
-    "You are in an empty room.",
-    "There are stairs going up.",
-    "You see stairs going down.",
-    "There is an angry monster here!",
-    "There is an extraordinarily large unhappy monster here.",
-    "This room has a foul smelling puddle.",
-]
+monsters = ("monster", "boss monster")
 
-roomContents = [
-    "+5 magic sword",
-    "some mysterious glowing stones",
-    "The Final Prize",
-]
+roomContents = {
+    "sword": "+5 magic sword",
+    "magic stones": "some mysterious glowing stones",
+    "prize": "The Final Prize",
+}
 
-inventory = []
-floor = 0
-room = 0
-previous_room = 0
-state = "running"
 
-while state != "win" and state != "lose":
-    print(roomDescriptions[the_map[floor][room]])
-    command = input("What will you do? ")
-    if command in ("help", "h", "?"):
-        print(
-            "You may go left (l), right (r), up (u) or down (d). You can get and fight. You may also check your bag."
-        )
-        
-    elif command in ("get", "grab", "pick up", "g"):
-        if the_map[floor][room] >= EMPTY:
-            print("There is nothing to get.")
-        elif len(inventory) >= 3:
-            print("You can only carry three things.")
-        else:
-            print("You get " + roomContents[the_map[floor][room]] + ".")
-            if the_map[floor][room] == PRIZE:
-                state = "win"
-            inventory.append(the_map[floor][room])
-            the_map[floor][room] = EMPTY
+def help():
+    print(
+        "You may go left (l), right (r), up or down. You can get and fight. You may also check your bag."
+    )
 
-    elif command in ["fight", "kill", "f"]:
-        ready_for_monster = SWORD in inventory
-        ready_for_boss = ready_for_monster and MAGIC_STONES in inventory
-        monster_here = the_map[floor][room] == MONSTER
-        boss_here = the_map[floor][room] == BOSS_MONSTER
-        if not monster_here and not boss_here:
-            print("Relax, there is nothing to fight here.")
-        elif monster_here and not ready_for_monster:
-            print("The monster kills you in a most horrible way.")
-            state = "lose"
-        elif boss_here and not ready_for_boss:
-            print(
-                "You are unprepared. The surprisingly big monster cheerfully kills you."
-            )
-            state = "lose"
-        else:
-            print(
-                "You slay the evil beast and it dissolves. Unfortunately, your sword also dissolves."
-            )
-            inventory.remove(SWORD)
-            the_map[floor][room] = CORPSE
 
-    elif command in ["bag", "b", "inventory"]:
-        if len(inventory) == 0:
-            print("Your bag is empty.")
-        else:
-            print(inventory)
+def left():
+    move("left")
 
-    elif command in ["up", "u"]:
-        if the_map[floor][room] == STAIRS_UP:
-            floor += 1
-        else:
-            print("There are no stairs going up.")
 
-    elif command in ["down", "d"]:
-        if the_map[floor][room] == STAIRS_DOWN:
-            floor -= 1
-        else:
-            print("There are no stairs going down.")
+def right():
+    move("right")
 
-    elif command in ["left", "l", "right", "r"]:
-        if command in ["left", "l"]:
-            direction = LEFT
-            command = "left"
-        else:
-            direction = RIGHT
-            command = "right"
-        there_is_a_monster = the_map[floor][room] in [MONSTER, BOSS_MONSTER]
-        going_back = room + direction == previous_room
-        if there_is_a_monster and not going_back:
-            print("The monster won't let you pass! You have died trying.")
-            state = "lose"
-        elif (direction == LEFT and room == MIN_ROOM) or (
-            direction == RIGHT and room == MAX_ROOM
-        ):
-            print("You can't go " + command + ".")
-        else:
-            previous_room = room
-            room += direction
 
+def move(direction):
+    global previous_room, room, state
+    room_change = {"left": -1, "right": 1}
+    there_is_a_monster = this_room() in monsters
+    going_back = room + room_change[direction] == previous_room
+    last_room = (
+        first_room_on_this_floor(floor)
+        if direction == "left"
+        else last_room_on_this_floor(floor)
+    )
+    if there_is_a_monster and not going_back:
+        print("The monster won't let you pass! You have died trying.")
+        state = "lose"
+        return
+    if room == last_room:
+        print(f"You can't go {direction}.")
+        return
+    previous_room = room
+    room += room_change[direction]
+
+
+def up():
+    global floor
+    if this_room() == "stairs up":
+        floor += 1
     else:
-        print('Command not recognized. Type "help" to see commands.')
+        print("There are no stairs going up.")
 
-if state == "win":
-    print("You won the game! :)")
-else:
-    print("You lost the game. :( Maybe next time.")
+
+def down():
+    global floor
+    if this_room() == "stairs down":
+        floor -= 1
+    else:
+        print("There are no stairs going down.")
+
+
+def get():
+    global state
+    if this_room() not in roomContents:
+        print("There is nothing to get.")
+        return
+    if len(inventory) >= 3:
+        print("You can only carry three things.")
+        return
+    print("You get {}".format(roomContents[this_room()]))
+    if this_room() == "prize":
+        state = "win"
+    inventory.append(this_room())
+    empty_this_room(floor, room)
+
+
+def fight():
+    global state
+    ready_for_monster = "sword" in inventory
+    ready_for_boss = ready_for_monster and "magic stones" in inventory
+    monster_here = this_room() == "monster"
+    boss_here = this_room() == "boss monster"
+    if not monster_here and not boss_here:
+        print("Relax, there is nothing to fight here.")
+        return
+    if monster_here and not ready_for_monster:
+        print("The monster kills you in a most horrible way.")
+        state = "lose"
+        return
+    if boss_here and not ready_for_boss:
+        print("You are unprepared. The surprisingly big monster cheerfully kills you.")
+        state = "lose"
+        return
+    print(
+        "You slay the evil beast and it dissolves. Unfortunately, your sword also dissolves."
+    )
+    inventory.remove("sword")
+    monster_died_here(floor, room)
+
+
+def bag():
+    if len(inventory) == 0:
+        print("Your bag is empty.")
+        return
+    print(", ".join([roomContents[item] for item in inventory]))
+
+
+def this_room():
+    return dungeon_map[floor][room]
+
+
+def first_room_on_this_floor(__):
+    return 0
+
+
+def last_room_on_this_floor(floor):
+    global dungeon_map
+    return len(dungeon_map[floor]) - 1
+
+
+def empty_this_room(floor, room):
+    global dungeon_map
+    dungeon_map[floor][room] = "empty"
+
+
+def description(floor, room):
+    return roomDescriptions[dungeon_map[floor][room]]
+
+
+def monster_died_here(floor, room):
+    global dungeon_map
+    dungeon_map[floor][room] = "corpse"
+
+
+commands = {
+    "help": help,
+    "left": left,
+    "l": left,
+    "right": right,
+    "r": right,
+    "up": up,
+    "u": up,
+    "down": down,
+    "d": down,
+    "get": get,
+    "fight": fight,
+    "bag": bag,
+}
+
+
+def playGame():
+    # create an Adventurer to represent me. Initialize inventory to empty,
+    # position to lower left room, state to game on
+
+    global inventory, floor, room, previous_room, state
+
+    inventory = []
+    floor = 0
+    room = 0
+    previous_room = 0
+    state = "running"
+
+    while state != "win" and state != "lose":
+        print(description(floor, room))
+        command = input("What will you do? ")
+        if command in commands:
+            commands[command]()
+        else:
+            print('Command not recognized. Type "help" to see commands.')
+
+    if state == "win":
+        print("You won the game! :)")
+    else:
+        print("You lost the game. :( Maybe next time.")
+
+
+playGame()
