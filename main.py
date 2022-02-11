@@ -50,11 +50,8 @@ def move(direction):
     room_change = {"left": -1, "right": 1}
     there_is_a_monster = this_room() in monsters
     going_back = room + room_change[direction] == previous_room
-    last_room = (
-        first_room_on_this_floor(floor)
-        if direction == "left"
-        else last_room_on_this_floor(floor)
-    )
+    last_room = (first_room_on_this_floor(floor)
+                 if direction == "left" else last_room_on_this_floor(floor))
     if there_is_a_monster and not going_back:
         print("The monster won't let you pass! You have died trying.")
         state = "lose"
@@ -111,7 +108,9 @@ def fight():
         state = "lose"
         return
     if boss_here and not ready_for_boss:
-        print("You are unprepared. The surprisingly big monster cheerfully kills you.")
+        print(
+            "You are unprepared. The surprisingly big monster cheerfully kills you."
+        )
         state = "lose"
         return
     print(
@@ -172,8 +171,9 @@ commands = {
 
 
 def playGame():
-    # create an Adventurer to represent me. Initialize inventory to empty,
-    # position to lower left room, state to game on
+    """
+    Start up my text monster game. Everything is printed to stdout. Input is from stdin.
+    """
 
     global inventory, floor, room, previous_room, state
 
